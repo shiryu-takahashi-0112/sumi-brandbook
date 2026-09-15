@@ -153,31 +153,10 @@ body.book {
 /* ロゴ。必ず assets/img/logo-*.svg（Figma書き出しの公式データ）を使う */
 .logo { display: block; width: 100%; height: auto; }
 
-/* 製品画像。元画像に焼き込まれた白背景用の影は切り抜きで除いてあるので、
-   黒地に合う影をここで作る。手前から順に、接地影（::after）と
-   広く薄いアンビエント（::before）の2層。 */
-.shot { position: relative; display: inline-block; line-height: 0; }
-.shot img { position: relative; z-index: 1; display: block; width: 100%; height: auto; }
-.shot::before,
-.shot::after {
-  content: "";
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  border-radius: 50%;
-  z-index: 0;
-  pointer-events: none;
-}
-.shot::before {
-  width: 118%; height: 24%; bottom: -10%;
-  background: radial-gradient(closest-side, rgba(0, 0, 0, 0.62), rgba(0, 0, 0, 0) 100%);
-  filter: blur(20px);
-}
-.shot::after {
-  width: 66%; height: 8%; bottom: -2%;
-  background: radial-gradient(closest-side, rgba(0, 0, 0, 0.95), rgba(0, 0, 0, 0) 100%);
-  filter: blur(8px);
-}
+/* 製品画像。透過PNGをそのまま置く（影は付けない）。
+   .shot は画像の表示幅を決めるためのラッパー。 */
+.shot { display: inline-block; line-height: 0; }
+.shot img { display: block; width: 100%; height: auto; }
 
 /* ---------- 各ページ固有 ---------- */
 
