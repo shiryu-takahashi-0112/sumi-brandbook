@@ -35,6 +35,19 @@
   }
   function asset(path) { return base + path; }
 
+  // 製品画像は透過PNG（影は焼き込まれていない）。
+  // 接地影は .shot の疑似要素で描くので、img は必ずこのラッパーに入れる。
+  function shot(cls) {
+    var span = el("span", "shot");
+    var img = el("img");
+    img.src = asset(variant.productImage);
+    img.alt = "SUMI カーディフューザー " + variant.label;
+    add(span, img);
+    var box = el("div", cls);
+    add(box, span);
+    return box;
+  }
+
   // SUMIのロゴは必ずFigmaから書き出した公式SVGを使う。
   // 文字を組んで代用しない（ブランド規定・README参照）。
   function logo(cls) {
@@ -83,11 +96,7 @@
     cover: function (page) {
       var section = el("section", "page cover");
 
-      var photo = el("div", "cover__photo");
-      var img = el("img");
-      img.src = asset(variant.productImage);
-      img.alt = "SUMI カーディフューザー " + variant.label;
-      add(photo, img);
+      var photo = shot("cover__photo");
 
       var inner = el("div", "cover__inner");
       var meta = el("div", "cover__meta");
@@ -201,11 +210,7 @@
       var s = shell(page, i, total);
       var grid = el("div", "product");
 
-      var fig = el("div", "product__figure");
-      var img = el("img");
-      img.src = asset(variant.productImage);
-      img.alt = "SUMI カーディフューザー " + variant.label;
-      add(fig, img);
+      var fig = shot("product__figure");
 
       var text = el("div", "product__text");
       add(text,

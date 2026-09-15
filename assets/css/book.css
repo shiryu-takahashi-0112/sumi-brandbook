@@ -153,6 +153,32 @@ body.book {
 /* ロゴ。必ず assets/img/logo-*.svg（Figma書き出しの公式データ）を使う */
 .logo { display: block; width: 100%; height: auto; }
 
+/* 製品画像。元画像に焼き込まれた白背景用の影は切り抜きで除いてあるので、
+   黒地に合う影をここで作る。手前から順に、接地影（::after）と
+   広く薄いアンビエント（::before）の2層。 */
+.shot { position: relative; display: inline-block; line-height: 0; }
+.shot img { position: relative; z-index: 1; display: block; width: 100%; height: auto; }
+.shot::before,
+.shot::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  z-index: 0;
+  pointer-events: none;
+}
+.shot::before {
+  width: 118%; height: 24%; bottom: -10%;
+  background: radial-gradient(closest-side, rgba(0, 0, 0, 0.62), rgba(0, 0, 0, 0) 100%);
+  filter: blur(20px);
+}
+.shot::after {
+  width: 66%; height: 8%; bottom: -2%;
+  background: radial-gradient(closest-side, rgba(0, 0, 0, 0.95), rgba(0, 0, 0, 0) 100%);
+  filter: blur(8px);
+}
+
 /* ---------- 各ページ固有 ---------- */
 
 /* 表紙 */
@@ -162,12 +188,10 @@ body.book {
   display: flex; align-items: center; justify-content: center;
   overflow: hidden;
 }
-.cover__photo img {
-  width: min(62%, 520px);
-  max-height: 62%;
-  object-fit: contain;
+.cover__photo .shot {
+  /* 高さは幅から決まるので、縦に溢れないよう vh でも上限をかける */
+  width: min(62%, 520px, 74vh);
   transform: translateY(-6%);
-  filter: drop-shadow(0 26px 40px rgba(0,0,0,0.55));
 }
 .cover__scrim {
   position: absolute; inset: 0;
@@ -238,12 +262,7 @@ body.book {
   display: flex; align-items: center; justify-content: center;
   min-height: 0;
 }
-.product__figure img {
-  width: 100%; max-width: 420px;
-  max-height: min(46vh, 420px);
-  object-fit: contain;
-  filter: drop-shadow(0 18px 30px rgba(0,0,0,0.5));
-}
+.product__figure .shot { width: min(100%, 420px, 60vh); }
 .product__text { display: flex; flex-direction: column; gap: clamp(12px, 2vh, 20px); }
 .points { border-top: 1px solid var(--hair); }
 .point {
@@ -331,7 +350,7 @@ body.book {
 }
 .choice:active { border-color: var(--ink-45); background: rgba(237, 234, 229, 0.05); }
 .choice__img { display: flex; align-items: center; justify-content: center; height: clamp(150px, 26vh, 260px); }
-.choice__img img { max-width: 100%; max-height: 100%; object-fit: contain; filter: drop-shadow(0 14px 24px rgba(0,0,0,0.5)); }
+.choice__img .shot { width: min(88%, 260px); }
 .choice__k { font-family: var(--latin); font-weight: 300; font-size: clamp(12px, 1.2vw, 14px); letter-spacing: 0.24em; opacity: 0.5; }
 .choice__t { font-family: var(--serif); font-size: clamp(15px, 1.7vw, 20px); letter-spacing: 0.08em; }
 .choice__d { font-size: clamp(11px, 1.1vw, 13px); line-height: 2; letter-spacing: 0.05em; color: var(--ink-60); }
