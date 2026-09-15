@@ -1,0 +1,347 @@
+/* =========================================================================
+   SUMI Brand Concept Book — スタイル
+   黒地・明朝見出し・広い字間。iPad（横持ち／縦持ち）での閲覧を前提にする。
+   ========================================================================= */
+
+:root {
+  --bg: #161616;
+  --ink: #edeae5;
+  --ink-60: rgba(237, 234, 229, 0.62);
+  --ink-45: rgba(237, 234, 229, 0.45);
+  --hair: rgba(237, 234, 229, 0.16);
+  --hair-strong: rgba(237, 234, 229, 0.32);
+
+  --serif: "Shippori Mincho", "Hiragino Mincho ProN", "Yu Mincho", serif;
+  --sans: "Noto Sans JP", "Hiragino Sans", sans-serif;
+  --latin: "Jost", "Helvetica Neue", sans-serif;
+
+  /* ページ内の左右余白。画面幅に応じて伸縮させる */
+  --pad-x: clamp(28px, 6vw, 88px);
+  --pad-y: clamp(28px, 5vh, 64px);
+  --measure: 34em;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-weight: 300;
+  -webkit-font-smoothing: antialiased;
+  -webkit-text-size-adjust: 100%;
+  overscroll-behavior: none;
+}
+
+/* iPadで本文を長押ししたときの選択・コールアウトを抑える（誤操作防止） */
+body.book {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* ---------- 横めくりビューアー ---------- */
+.pager {
+  display: flex;
+  height: 100dvh;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.pager::-webkit-scrollbar { display: none; }
+
+.page {
+  position: relative;
+  flex: 0 0 100vw;
+  width: 100vw;
+  height: 100dvh;
+  scroll-snap-align: center;
+  scroll-snap-stop: always;
+  padding: var(--pad-y) var(--pad-x);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* 内容が縦に収まらない場合だけ、そのページ内で縦スクロールを許す */
+.page__body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: clamp(18px, 3.2vh, 34px);
+  padding-block: clamp(12px, 2vh, 28px);
+}
+.page__body::-webkit-scrollbar { display: none; }
+
+.wrap { width: 100%; max-width: min(46em, 100%); }
+
+/* ---------- ヘッダー / フッター ---------- */
+.head {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: clamp(10px, 1.6vh, 18px);
+  border-bottom: 1px solid var(--hair);
+}
+.head__jp { font-size: clamp(11px, 1.15vw, 13px); letter-spacing: 0.14em; opacity: 0.8; }
+.head__en {
+  font-family: var(--latin); font-weight: 300;
+  font-size: clamp(11px, 1.15vw, 13px); letter-spacing: 0.22em; opacity: 0.5;
+}
+
+.foot {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-top: clamp(8px, 1.4vh, 16px);
+}
+.foot__mark {
+  font-family: var(--latin); font-weight: 300;
+  font-size: clamp(13px, 1.4vw, 16px); letter-spacing: 0.42em; opacity: 0.75;
+}
+.foot__folio {
+  font-family: var(--latin); font-weight: 300;
+  font-size: clamp(9px, 1vw, 11px); letter-spacing: 0.2em; opacity: 0.42;
+}
+
+/* ---------- 文字組み ---------- */
+.display {
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: clamp(21px, 2.55vw, 34px);
+  line-height: 1.8;
+  letter-spacing: 0.06em;
+  white-space: pre-line;
+  max-width: 22em;
+  margin: 0;
+}
+.display--sm { font-size: clamp(18px, 2vw, 26px); }
+
+.lead, .body {
+  font-size: clamp(13px, 1.25vw, 16px);
+  line-height: 2.15;
+  letter-spacing: 0.06em;
+  color: var(--ink-60);
+  white-space: pre-line;
+  max-width: var(--measure);
+  margin: 0;
+}
+.body + .body { margin-top: 1.2em; }
+
+.note {
+  font-size: clamp(10px, 1vw, 12px);
+  line-height: 1.9;
+  letter-spacing: 0.04em;
+  color: var(--ink-45);
+  margin: 0;
+}
+
+.mincho { font-family: var(--serif); font-weight: 400; letter-spacing: 0.08em; }
+.latin { font-family: var(--latin); font-weight: 300; }
+
+.tick { width: 40px; height: 1px; background: var(--hair-strong); border: 0; margin: 0; }
+
+/* ---------- 各ページ固有 ---------- */
+
+/* 表紙 */
+.cover { justify-content: flex-end; padding: 0; }
+.cover__photo {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+}
+.cover__photo img {
+  width: min(62%, 520px);
+  max-height: 62%;
+  object-fit: contain;
+  transform: translateY(-6%);
+  filter: drop-shadow(0 26px 40px rgba(0,0,0,0.55));
+}
+.cover__scrim {
+  position: absolute; inset: 0;
+  background: linear-gradient(to bottom, rgba(22,22,22,0) 35%, rgba(22,22,22,0.85) 72%, #161616 100%);
+}
+.cover__inner {
+  position: relative;
+  padding: var(--pad-y) var(--pad-x);
+  display: flex; flex-direction: column; gap: clamp(14px, 2vh, 22px);
+  width: 100%;
+}
+.cover__mark {
+  font-family: var(--latin); font-weight: 300;
+  font-size: clamp(26px, 3.4vw, 44px); letter-spacing: 0.44em;
+}
+.cover__tag {
+  font-family: var(--serif);
+  font-size: clamp(14px, 1.5vw, 19px); line-height: 1.9; letter-spacing: 0.08em;
+}
+.cover__meta {
+  display: flex; justify-content: space-between; align-items: baseline;
+  gap: 16px; padding-top: clamp(8px, 1.4vh, 16px);
+}
+.cover__meta span:first-child {
+  font-family: var(--latin); font-weight: 300;
+  font-size: clamp(10px, 1vw, 12px); letter-spacing: 0.24em; opacity: 0.55;
+}
+.cover__meta span:last-child { font-size: clamp(9px, 0.95vw, 11px); letter-spacing: 0.08em; opacity: 0.45; }
+
+/* 仕様リスト（はじめに） */
+.specs { width: 100%; max-width: var(--measure); border-top: 1px solid var(--hair); }
+.specs__row {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 16px;
+  padding: clamp(13px, 2vh, 20px) 0;
+  border-bottom: 1px solid var(--hair);
+}
+.specs__k { font-family: var(--latin); font-weight: 300; font-size: clamp(9px, 0.95vw, 11px); letter-spacing: 0.22em; opacity: 0.42; }
+.specs__v { font-size: clamp(12px, 1.15vw, 14px); letter-spacing: 0.06em; }
+
+/* Value */
+.values { width: 100%; max-width: var(--measure); border-top: 1px solid var(--hair); }
+.value {
+  display: grid;
+  grid-template-columns: 3.2em 1fr;
+  gap: 0 clamp(10px, 1.6vw, 18px);
+  padding: clamp(14px, 2.4vh, 26px) 0;
+  border-bottom: 1px solid var(--hair);
+}
+.value__num { font-family: var(--latin); font-weight: 300; font-size: clamp(10px, 1vw, 12px); letter-spacing: 0.2em; opacity: 0.4; padding-top: 0.4em; }
+.value__en { font-family: var(--latin); font-weight: 300; font-size: clamp(14px, 1.5vw, 18px); letter-spacing: 0.16em; }
+.value__jp { font-family: var(--serif); font-size: clamp(15px, 1.6vw, 19px); letter-spacing: 0.08em; margin-top: 0.25em; }
+.value__desc { font-size: clamp(11px, 1.1vw, 13px); line-height: 2; letter-spacing: 0.05em; color: var(--ink-60); margin-top: 0.7em; }
+
+/* 名前の由来 */
+.name__mark { font-family: var(--latin); font-weight: 300; font-size: clamp(34px, 5vw, 62px); letter-spacing: 0.34em; }
+.name__reading { font-family: var(--serif); font-size: clamp(12px, 1.2vw, 15px); letter-spacing: 0.14em; opacity: 0.55; margin-top: 0.4em; }
+.terms { width: 100%; max-width: var(--measure); border-top: 1px solid var(--hair); }
+.term {
+  display: grid; grid-template-columns: 5.5em 1fr; gap: 0 clamp(12px, 2vw, 24px);
+  padding: clamp(14px, 2.4vh, 26px) 0; border-bottom: 1px solid var(--hair);
+}
+.term__k { font-family: var(--serif); font-weight: 500; font-size: clamp(16px, 1.8vw, 21px); letter-spacing: 0.08em; }
+.term__v { font-size: clamp(11px, 1.1vw, 13px); line-height: 2.1; letter-spacing: 0.05em; color: var(--ink-60); }
+
+/* プロダクト */
+.product { display: grid; gap: clamp(16px, 3vh, 30px); align-items: center; width: 100%; }
+@media (min-aspect-ratio: 1/1) and (min-width: 820px) {
+  .product { grid-template-columns: 1fr 1fr; gap: clamp(24px, 4vw, 56px); max-width: none; }
+}
+.product__figure {
+  display: flex; align-items: center; justify-content: center;
+  min-height: 0;
+}
+.product__figure img {
+  width: 100%; max-width: 420px;
+  max-height: min(46vh, 420px);
+  object-fit: contain;
+  filter: drop-shadow(0 18px 30px rgba(0,0,0,0.5));
+}
+.product__text { display: flex; flex-direction: column; gap: clamp(12px, 2vh, 20px); }
+.points { border-top: 1px solid var(--hair); }
+.point {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 14px;
+  padding: clamp(9px, 1.5vh, 14px) 0; border-bottom: 1px solid var(--hair);
+}
+.point__k { font-family: var(--latin); font-weight: 300; font-size: clamp(9px, 0.95vw, 11px); letter-spacing: 0.22em; opacity: 0.42; }
+.point__v { font-size: clamp(11px, 1.1vw, 13px); letter-spacing: 0.05em; }
+
+/* 車内での佇まい（画像未生成時のプレースホルダー付き） */
+.incar__frame {
+  width: 100%; aspect-ratio: 16 / 9;
+  border: 1px solid var(--hair);
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+  max-height: 48vh;
+}
+.incar__frame img { width: 100%; height: 100%; object-fit: cover; }
+.incar__placeholder { font-size: clamp(10px, 1vw, 12px); letter-spacing: 0.08em; color: var(--ink-45); }
+
+/* 香り */
+.keywords { display: flex; flex-wrap: wrap; gap: clamp(16px, 3vw, 40px); border-top: 1px solid var(--hair); border-bottom: 1px solid var(--hair); padding: clamp(12px, 2vh, 20px) 0; }
+.keywords span { font-family: var(--serif); font-size: clamp(14px, 1.5vw, 18px); letter-spacing: 0.1em; opacity: 0.88; }
+
+/* 価格 */
+.price { font-family: var(--latin); font-weight: 300; font-size: clamp(30px, 4.4vw, 56px); letter-spacing: 0.04em; }
+.price__label { font-size: clamp(11px, 1.1vw, 13px); letter-spacing: 0.1em; color: var(--ink-60); }
+
+/* アンケート */
+.cta {
+  display: flex; align-items: center; justify-content: space-between; gap: 20px;
+  width: 100%; max-width: var(--measure);
+  padding: clamp(18px, 3vh, 30px) clamp(18px, 3vw, 32px);
+  border: 1px solid var(--hair-strong);
+  background: rgba(237, 234, 229, 0.05);
+  color: inherit; text-decoration: none;
+  transition: background 160ms ease, border-color 160ms ease;
+}
+.cta:active { background: rgba(237, 234, 229, 0.11); border-color: var(--ink-45); }
+.cta__main { font-family: var(--serif); font-weight: 500; font-size: clamp(15px, 1.7vw, 20px); letter-spacing: 0.08em; }
+.cta__sub { font-size: clamp(10px, 1vw, 12px); letter-spacing: 0.08em; color: var(--ink-60); margin-top: 0.5em; }
+.cta__arrow { font-family: var(--latin); font-size: clamp(16px, 2vw, 22px); opacity: 0.6; }
+.cta[aria-disabled="true"] { opacity: 0.5; pointer-events: none; }
+
+/* ---------- ナビゲーション ---------- */
+.nav-zone {
+  position: fixed; top: 0; bottom: 0; width: clamp(56px, 9vw, 110px);
+  z-index: 5; background: transparent; border: 0; cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.nav-zone--prev { left: 0; }
+.nav-zone--next { right: 0; }
+.nav-zone:disabled { pointer-events: none; }
+
+.progress {
+  position: fixed; left: 0; right: 0; bottom: 0; height: 2px;
+  background: rgba(237, 234, 229, 0.1); z-index: 6;
+}
+.progress__bar { height: 100%; width: 0; background: var(--ink-45); transition: width 240ms ease; }
+
+.hint {
+  position: fixed; bottom: clamp(14px, 2.4vh, 26px); left: 50%; transform: translateX(-50%);
+  font-family: var(--latin); font-size: 10px; letter-spacing: 0.24em;
+  color: var(--ink-45); z-index: 6; pointer-events: none;
+  transition: opacity 500ms ease;
+}
+.hint[hidden] { display: block !important; opacity: 0; }
+
+/* ---------- TOP（実施者用の分岐画面） ---------- */
+.top {
+  min-height: 100dvh; display: flex; flex-direction: column; justify-content: center;
+  gap: clamp(28px, 5vh, 56px); padding: var(--pad-y) var(--pad-x);
+  max-width: 900px; margin: 0 auto;
+}
+.top__head { display: flex; flex-direction: column; gap: 12px; }
+.top__mark { font-family: var(--latin); font-weight: 300; font-size: clamp(24px, 3vw, 38px); letter-spacing: 0.44em; }
+.top__sub { font-size: clamp(11px, 1.1vw, 13px); letter-spacing: 0.1em; color: var(--ink-60); }
+.choices { display: grid; gap: clamp(14px, 2.4vh, 22px); grid-template-columns: 1fr; }
+@media (min-width: 720px) { .choices { grid-template-columns: 1fr 1fr; } }
+.choice {
+  display: flex; flex-direction: column; gap: 14px;
+  padding: clamp(18px, 3vh, 28px);
+  border: 1px solid var(--hair); color: inherit; text-decoration: none;
+  transition: border-color 160ms ease, background 160ms ease;
+}
+.choice:active { border-color: var(--ink-45); background: rgba(237, 234, 229, 0.05); }
+.choice__img { display: flex; align-items: center; justify-content: center; height: clamp(150px, 26vh, 260px); }
+.choice__img img { max-width: 100%; max-height: 100%; object-fit: contain; filter: drop-shadow(0 14px 24px rgba(0,0,0,0.5)); }
+.choice__k { font-family: var(--latin); font-weight: 300; font-size: clamp(12px, 1.2vw, 14px); letter-spacing: 0.24em; opacity: 0.5; }
+.choice__t { font-family: var(--serif); font-size: clamp(15px, 1.7vw, 20px); letter-spacing: 0.08em; }
+.choice__d { font-size: clamp(11px, 1.1vw, 13px); line-height: 2; letter-spacing: 0.05em; color: var(--ink-60); }
+.top__random {
+  align-self: flex-start;
+  font-family: var(--latin); font-size: clamp(10px, 1vw, 12px); letter-spacing: 0.22em;
+  color: var(--ink-60); text-decoration: none;
+  border-bottom: 1px solid var(--hair); padding-bottom: 6px;
+}
+.top__note { font-size: clamp(10px, 1vw, 12px); line-height: 1.9; color: var(--ink-45); }

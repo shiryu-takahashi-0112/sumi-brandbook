@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#161616">
+<meta name="robots" content="noindex, nofollow">
+<title>SUMI — 調査用 提示パターン選択</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500&family=Noto+Sans+JP:wght@300;400&family=Jost:wght@300;400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/book.css">
+</head>
+<body>
+<main class="top">
+
+  <div class="top__head">
+    <div class="top__mark">SUMI</div>
+    <div class="top__sub">Brand Concept Book ／ 調査用・提示パターンの選択</div>
+  </div>
+
+  <div class="choices">
+    <a class="choice" href="a/">
+      <div class="choice__img"><img src="assets/img/product-a.png" alt="デザイン案 A"></div>
+      <div class="choice__k">PATTERN A</div>
+      <div class="choice__t">デザイン案 A</div>
+      <div class="choice__d">木目の面の一角を斜めに切り落とし、鏡面のシルバーをのぞかせる非対称のデザイン。</div>
+    </a>
+
+    <a class="choice" href="b/">
+      <div class="choice__img"><img src="assets/img/product-b.png" alt="デザイン案 B"></div>
+      <div class="choice__k">PATTERN B</div>
+      <div class="choice__t">デザイン案 B</div>
+      <div class="choice__d">全周をシルバーのベゼルで受け、内側に細いリブを刻んだ左右対称のデザイン。</div>
+    </a>
+  </div>
+
+  <a class="top__random" href="#" id="random">RANDOM — ランダムに割り当てる</a>
+
+  <p class="top__note">
+    この画面は調査を実施する側の入口です。回答者にはどちらか一方のみを提示してください。<br>
+    どちらを提示したかは、アンケートのURLに <span class="latin">?v=a</span> ／ <span class="latin">?v=b</span> として自動で引き渡されます。
+  </p>
+
+</main>
+
+<script>
+  // 提示パターンの偏りを避けたいときのランダム割り当て
+  document.getElementById("random").addEventListener("click", function (e) {
+    e.preventDefault();
+    location.href = Math.random() < 0.5 ? "a/" : "b/";
+  });
+</script>
+</body>
+</html>
