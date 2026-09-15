@@ -35,6 +35,18 @@
   }
   function asset(path) { return base + path; }
 
+  // SUMIのロゴは必ずFigmaから書き出した公式SVGを使う。
+  // 文字を組んで代用しない（ブランド規定・README参照）。
+  function logo(cls) {
+    var span = el("span", cls);
+    var img = el("img");
+    img.src = asset("assets/img/logo-white.svg");
+    img.alt = CONFIG.brand;
+    img.className = "logo";
+    add(span, img);
+    return span;
+  }
+
   /* ---------- アンケートURL（見たパターンをクエリで渡す） ---------- */
   function surveyUrl() {
     var u = CONFIG.surveyUrl;
@@ -54,7 +66,7 @@
     var foot = el("div", "foot");
     add(
       foot,
-      el("div", "foot__mark", CONFIG.brand),
+      logo("foot__mark"),
       el("div", "foot__folio", pad(index + 1) + " / " + pad(total))
     );
 
@@ -82,7 +94,7 @@
       add(meta, el("span", null, CONFIG.bookTitle), el("span", null, page.note));
       add(
         inner,
-        el("div", "cover__mark", CONFIG.brand),
+        logo("cover__mark"),
         el("hr", "tick"),
         el("div", "cover__tag", page.tagline),
         meta
@@ -155,7 +167,7 @@
     name: function (page, i, total) {
       var s = shell(page, i, total);
       var w = wrap();
-      add(w, el("div", "name__mark", CONFIG.brand), el("div", "name__reading", page.reading));
+      add(w, logo("name__mark"), el("div", "name__reading", page.reading));
 
       var terms = el("div", "terms");
       page.terms.forEach(function (t) {

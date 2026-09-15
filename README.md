@@ -22,6 +22,8 @@
 | `assets/js/book.js` | ページの組み立てと横めくりの制御 |
 | `assets/css/book.css` | スタイル。黒地・明朝見出し・iPad前提のレスポンシブ |
 | `a/index.html`, `b/index.html` | パターン指定だけを持つ入れ物。中身は持たない |
+| `assets/img/logo-white.svg` | **SUMIロゴ（暗い背景用）。Figmaからの書き出しをそのまま使う** |
+| `assets/img/logo-black.svg` | SUMIロゴ（明るい背景用） |
 | `assets/img/product-a.png` | A案の製品画像（背景透過済み） |
 | `assets/img/product-b.png` | B案の製品画像（背景透過済み） |
 | `assets/img/src/` | Figmaから書き出した白背景の元画像 |
@@ -74,8 +76,14 @@ Cloudflare Pages。ビルド不要の静的サイトなので、出力ディレ�
 npx wrangler pages deploy . --project-name sumi-brandbook
 ```
 
+## ロゴの扱い
+
+ロゴは必ず `assets/img/logo-*.svg` を使う。フォントで「SUMI」と組んで代用したり、
+パスや色を編集したりしない。詳細は [CLAUDE.md](CLAUDE.md) を参照。
+
 ## 元になった資料
 
 - ブランドコンセプトブック（Figma・v2 / 10ページ）: `Service` ファイルの section `261:872`
 - デザイン案A / B の元画像: 同ファイルの section `269:1070`
+- ロゴ（White / Black）: 同ファイルの section `122:930`
 - Mission・Vision・Value / ペルソナ / ブランドストーリー: Notion「SUMI」配下
