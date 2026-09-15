@@ -1,23 +1,34 @@
-"""白背景の製品レンダリングを、製品だけの透過PNGに変換する。
+"""白背景の製品レンダリングを、暗い背景に自然に置ける透過PNGへ変換する。
 
-元画像には白背景用のドロップシャドウが焼き込まれている。そのまま切り抜くと
-暗い背景では製品の下に灰色の溜まりとして残る。
+元画像は白地に製品＋接地影が焼き込まれている。製品の底面と影は明度の階調で
+つながっていて、どこで切っても不自然になる（切れば見切れ、残せば灰色の溜まり）。
 
-製品の底面と接地影は明度の階調でつながっているため、明度だけでは分離できない。
-代わりに「鏡面には局所的な明暗差（構造）があり、影はなめらか」という差を使う。
-行内の隣接画素の最大明暗差を見て、それが消えた行を製品の下端とする。
+そこで影を「消す」のではなく、背景に依存しない形へ変換する。
+白地の影は  観測値 = 255 x k （k は遮光率）。任意の背景色 BG で同じ影を
+再現するには BG x k にすればよく、これは「黒を不透明度 1-k で重ねる」ことと等しい。
+つまり影の領域を color=黒 / alpha=1-明度/255 にすれば、どんな背景でも
+物理的に正しい影になる。
+
+    製品の領域 … 元の色をそのまま不透明で置く
+    それ以外   … 黒 + alpha=1-明度/255（＝元のレンダリングの影そのもの）
+
+製品領域の下端は、影の裾が横に張り出し始める行までとし、そこから下は
+上の変換に任せる。境目はフェードさせるので、底面は自分の影へ溶けていく。
+
+SHADOW = False にすると影を落とし、製品だけの切り抜きになる。
 
   使い方:  python3 tools/cutout.py assets/img/src/product-a.png assets/img/product-a.png
 """
 import sys
 from PIL import Image, ImageFilter
 
-OUTLINE_MAX = 200     # 輪郭判定の明度。明るい鏡面リムの外周までここに収まる
-STRUCTURE_MIN = 10    # 行内にこれ以上の明暗差があれば、まだ製品（鏡面）の行
-STRUCTURE_RUN = 3     # 構造のない行がこの数だけ続いたら製品の下端とみなす
-FADE_RATIO = 0.012    # 下端の切り口を消すフェード（シルエット高さに対する比率）
-FEATHER = 1.1         # 輪郭のぼかし半径（px）
-MAX_WIDTH = 1400      # web用の長辺
+SHADOW = True        # 元のレンダリングの接地影を残すか
+OUTLINE_MAX = 200    # 輪郭判定の明度。明るい鏡面リムの外周までここに収まる
+FLARE_SLACK = 4      # この画素数を超えて幅が広がったら影の裾が始まったとみなす
+BLEND_RATIO = 0.22   # 製品領域の下端を影へ溶かす距離（製品の高さに対する比率）
+SHADOW_FLOOR = 0.03  # これ未満の薄い影は捨てて画像を軽くする
+FEATHER = 1.1        # 輪郭のぼかし半径（px）
+MAX_WIDTH = 1400     # web用の長辺
 
 
 def luminance_rows(rgb, w, h):
@@ -46,69 +57,34 @@ def row_extents(rows, w):
     return out
 
 
-def has_structure(row, e):
-    """行内の隣接画素の最大明暗差。鏡面なら大きく、なめらかな影なら小さい。"""
-    if not e or e[1] <= e[0]:
-        return False
-    for i in range(e[0], e[1]):
-        if abs(row[i + 1] - row[i]) >= STRUCTURE_MIN:
-            return True
-    return False
-
-
-def trim(rows, extents):
-    """最も広い行から下へたどり、鏡面の構造が消えた行より下を落とす。
-    あわせて、行幅が下に向かって広がらないよう制限し、影の裾を含めない。"""
+def product_mask(rows, extents, w, h):
+    """製品の領域。行ごとに左端〜右端を塗るので、内部の鏡面ハイライト
+    （白に近く閾値から漏れる部分）も過不足なく埋まる。"""
     widths = [(e[1] - e[0] + 1) if e else -1 for e in extents]
     widest = widths.index(max(widths))
 
-    quiet = 0
-    bottom = len(extents)
-    for y in range(widest + 1, len(extents)):
-        if extents[y] is None:
+    bottom = h
+    for y in range(widest + 1, h):
+        if widths[y] < 0 or widths[y] > widths[y - 1] + FLARE_SLACK:
             bottom = y
             break
-        quiet = 0 if has_structure(rows[y], extents[y]) else quiet + 1
-        if quiet >= STRUCTURE_RUN:
-            bottom = y - quiet + 1
-            break
 
-    for y in range(bottom, len(extents)):
-        extents[y] = None
-
-    prev = extents[widest]
-    for y in range(widest + 1, bottom):
-        e = extents[y]
-        if e is None:
-            continue
-        left, right = max(e[0], prev[0]), min(e[1], prev[1])
-        extents[y] = prev = (left, right) if left <= right else prev
-    return extents
-
-
-def build_mask(extents, w, h):
-    """行ごとに左端〜右端を塗る。製品は凸形状なので、内部の鏡面ハイライト
-    （白に近く閾値から漏れる部分）もこれで過不足なく埋まる。"""
     mask = bytearray(w * h)
-    for y, e in enumerate(extents):
+    for y in range(bottom):
+        e = extents[y]
         if not e:
             continue
         base = y * w
         for x in range(e[0], e[1] + 1):
             mask[base + x] = 255
-    return mask
 
-
-def fade_bottom(mask, extents, w):
-    """下端の切り口だけを数px分フェードさせて、水平の断面線を消す。"""
-    rows = [y for y, e in enumerate(extents) if e]
-    if not rows:
-        return mask
-    top, bottom = rows[0], rows[-1]
-    span = max(int((bottom - top) * FADE_RATIO), 1)
-    for i in range(span):
-        y = bottom - i
-        a = int(255 * (i + 1) / (span + 1))
+    # 下端を影へ溶かす
+    blend = int((bottom - widest) * BLEND_RATIO) or 1
+    for i in range(blend):
+        y = bottom - 1 - i
+        if y < 0:
+            break
+        a = int(255 * (i + 1) / (blend + 1))
         base = y * w
         for x in range(w):
             if mask[base + x]:
@@ -119,18 +95,35 @@ def fade_bottom(mask, extents, w):
 def main(src, dst):
     im = Image.open(src).convert("RGB")
     w, h = im.size
+    px = im.load()
 
     rows = luminance_rows(im, w, h)
-    extents = trim(rows, row_extents(rows, w))
-    mask = fade_bottom(build_mask(extents, w, h), extents, w)
+    mask = product_mask(rows, row_extents(rows, w), w, h)
 
     m = Image.frombytes("L", (w, h), bytes(mask))
-    # 輪郭を1px内側に削ってから軽くぼかす。
-    # 元画像の境界画素は白と混ざっているため、削らないと暗い背景で白い縁が出る。
+    # 輪郭を1px内側に削ってからぼかす。元画像の境界画素は白と混ざっているため、
+    # 削らないと暗い背景で白い縁が出る。
     m = m.filter(ImageFilter.MinFilter(3)).filter(ImageFilter.GaussianBlur(FEATHER))
+    mp = m.load()
 
-    out = im.convert("RGBA")
-    out.putalpha(m)
+    out = Image.new("RGBA", (w, h))
+    op = out.load()
+    floor = int(SHADOW_FLOOR * 255)
+
+    for y in range(h):
+        row = rows[y]
+        for x in range(w):
+            k = mp[x, y]                       # 製品らしさ 0..255
+            shade = (255 - row[x]) if SHADOW else 0
+            if shade < floor:
+                shade = 0
+            if k == 0:
+                if shade:
+                    op[x, y] = (0, 0, 0, shade)
+                continue
+            r, g, b = px[x, y]
+            f = k / 255.0                      # 境目では製品の色を黒へ寄せる
+            op[x, y] = (int(r * f), int(g * f), int(b * f), k if k >= shade else shade)
 
     bbox = out.getbbox()
     if bbox:
