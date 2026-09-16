@@ -18,7 +18,7 @@
   /* ページ内の左右余白。画面幅に応じて伸縮させる */
   --pad-x: clamp(28px, 6vw, 88px);
   --pad-y: clamp(28px, 5vh, 64px);
-  --measure: 34em;
+  --measure: 100%;
 }
 
 * { box-sizing: border-box; }
@@ -81,7 +81,7 @@ body.book {
 }
 .page__body::-webkit-scrollbar { display: none; }
 
-.wrap { width: 100%; max-width: min(46em, 100%); }
+.wrap { width: 100%; max-width: 100%; }
 
 /* ---------- ヘッダー / フッター ---------- */
 .head {
@@ -107,7 +107,7 @@ body.book {
   gap: 16px;
   padding-top: clamp(8px, 1.4vh, 16px);
 }
-.foot__mark { width: clamp(52px, 6.5vw, 74px); opacity: 0.75; }
+.foot__mark { width: clamp(40px, 4.6vw, 54px); opacity: 0.7; }
 .foot__folio {
   font-family: var(--latin); font-weight: 300;
   font-size: clamp(9px, 1vw, 11px); letter-spacing: 0.2em; opacity: 0.42;
@@ -121,7 +121,6 @@ body.book {
   line-height: 1.8;
   letter-spacing: 0.06em;
   white-space: pre-line;
-  max-width: 22em;
   margin: 0;
 }
 .display--sm { font-size: clamp(18px, 2vw, 26px); }
@@ -184,7 +183,7 @@ body.book {
   display: flex; flex-direction: column; gap: clamp(14px, 2vh, 22px);
   width: 100%;
 }
-.cover__mark { width: clamp(126px, 16vw, 196px); }
+.cover__mark { width: clamp(92px, 11vw, 138px); }
 .cover__tag {
   font-family: var(--serif);
   font-size: clamp(14px, 1.5vw, 19px); line-height: 1.9; letter-spacing: 0.08em;
@@ -291,6 +290,15 @@ body.book {
 .point__k { font-family: var(--latin); font-weight: 300; font-size: clamp(9px, 0.95vw, 11px); letter-spacing: 0.22em; opacity: 0.42; }
 .point__v { font-size: clamp(11px, 1.1vw, 13px); letter-spacing: 0.05em; }
 
+/* 各ページ下部の世界観カット */
+.band {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  max-height: 26vh;
+  overflow: hidden;
+}
+.band img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
 /* 車内での佇まい（画像未生成時のプレースホルダー付き） */
 .incar__frame {
   width: 100%; aspect-ratio: 16 / 9;
@@ -357,7 +365,7 @@ body.book {
   max-width: 900px; margin: 0 auto;
 }
 .top__head { display: flex; flex-direction: column; gap: 12px; }
-.top__mark { width: clamp(112px, 14vw, 172px); }
+.top__mark { width: clamp(84px, 10vw, 124px); }
 .top__sub { font-size: clamp(11px, 1.1vw, 13px); letter-spacing: 0.1em; color: var(--ink-60); }
 .choices { display: grid; gap: clamp(14px, 2.4vh, 22px); grid-template-columns: 1fr; }
 @media (min-width: 720px) { .choices { grid-template-columns: 1fr 1fr; } }
@@ -373,10 +381,3 @@ body.book {
 .choice__k { font-family: var(--latin); font-weight: 300; font-size: clamp(12px, 1.2vw, 14px); letter-spacing: 0.24em; opacity: 0.5; }
 .choice__t { font-family: var(--serif); font-size: clamp(15px, 1.7vw, 20px); letter-spacing: 0.08em; }
 .choice__d { font-size: clamp(11px, 1.1vw, 13px); line-height: 2; letter-spacing: 0.05em; color: var(--ink-60); }
-.top__random {
-  align-self: flex-start;
-  font-family: var(--latin); font-size: clamp(10px, 1vw, 12px); letter-spacing: 0.22em;
-  color: var(--ink-60); text-decoration: none;
-  border-bottom: 1px solid var(--hair); padding-bottom: 6px;
-}
-.top__note { font-size: clamp(10px, 1vw, 12px); line-height: 1.9; color: var(--ink-45); }

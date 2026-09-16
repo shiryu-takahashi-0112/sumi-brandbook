@@ -90,6 +90,17 @@
 
   function wrap() { return el("div", "wrap"); }
 
+  // ページ下部に敷く世界観カット。A/B共通（製品が写っていないので比較条件を崩さない）
+  function band(page) {
+    if (!page.image) return null;
+    var box = el("div", "band");
+    var img = el("img");
+    img.src = asset(page.image);
+    img.alt = "";
+    add(box, img);
+    return box;
+  }
+
   /* ---------- レイアウトごとの組み立て ---------- */
   var renderers = {
 
@@ -139,7 +150,7 @@
         add(trio, item);
       });
 
-      add(s.body, w, b, sc, trio);
+      add(s.body, w, b, sc, trio, band(page));
       return s.section;
     },
 
@@ -157,13 +168,12 @@
       var c = wrap();
       var closing = el("p", "mincho", page.closing);
       closing.style.whiteSpace = "pre-line";
-      closing.style.textAlign = "right";
       closing.style.lineHeight = "2";
       closing.style.opacity = "0.8";
       closing.style.fontSize = "clamp(13px, 1.4vw, 17px)";
       closing.style.margin = "0";
       add(c, closing);
-      add(s.body, w, b, origin, c);
+      add(s.body, w, b, origin, c, band(page));
       return s.section;
     },
 
@@ -240,7 +250,7 @@
       q.style.gap = "16px";
       add(q, el("p", "display display--sm", page.question), el("p", "body", page.body));
 
-      add(s.body, w, q);
+      add(s.body, w, q, band(page));
       return s.section;
     },
 
@@ -264,10 +274,9 @@
 
       var t = wrap();
       var thanks = el("p", "note", page.thanks);
-      thanks.style.textAlign = "right";
       add(t, thanks);
 
-      add(s.body, w, b, cta, t);
+      add(s.body, w, b, cta, t, band(page));
       return s.section;
     }
   };

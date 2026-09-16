@@ -37,21 +37,6 @@
     </a>
   </div>
 
-  <a class="top__random" href="#" id="random">RANDOM — ランダムに割り当てる</a>
-
-  <p class="top__note">
-    この画面は調査を実施する側の入口です。回答者にはどちらか一方のみを提示してください。<br>
-    どちらを提示したかは、アンケートのURLに <span class="latin">?v=a</span> ／ <span class="latin">?v=b</span> として自動で引き渡されます。
-  </p>
-
 </main>
-
-<script>
-  // 提示パターンの偏りを避けたいときのランダム割り当て
-  document.getElementById("random").addEventListener("click", function (e) {
-    e.preventDefault();
-    location.href = Math.random() < 0.5 ? "a/" : "b/";
-  });
-</script>
 </body>
 </html>

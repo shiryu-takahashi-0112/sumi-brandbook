@@ -34,6 +34,8 @@
 | `a/index.html`, `b/index.html` | パターン指定だけを持つ入れ物。中身は持たない |
 | `assets/img/logo-white.svg` | **SUMIロゴ（暗い背景用）。Figmaからの書き出しをそのまま使う** |
 | `assets/img/logo-black.svg` | SUMIロゴ（明るい背景用） |
+| `assets/img/scene-*.jpg` | 各ページ下部の世界観カット（A/B共通・製品は写っていない） |
+| `assets/img/in-car-*.jpg` | 車内装着画像（A/Bで異なる） |
 | `assets/img/product-a.png` | A案の製品画像（背景透過済み） |
 | `assets/img/product-b.png` | B案の製品画像（背景透過済み） |
 | `assets/img/src/` | Figmaから書き出した白背景の元画像 |

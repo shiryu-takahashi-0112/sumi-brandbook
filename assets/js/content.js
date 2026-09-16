@@ -65,6 +65,7 @@ window.SUMI_PAGES = [
 
   {
     type: "concept",
+    image: "assets/img/scene-concept.jpg",
     labelJp: "コンセプト",
     labelEn: "Concept",
     display: "車と過ごす時間を、\n上質なひとときへ。",
@@ -81,6 +82,7 @@ window.SUMI_PAGES = [
 
   {
     type: "story",
+    image: "assets/img/scene-story.jpg",
     labelJp: "ブランドについて",
     labelEn: "Story",
     display: "車は、ただ移動するための場所ではない。",
@@ -118,6 +120,7 @@ window.SUMI_PAGES = [
 
   {
     type: "price",
+    image: "assets/img/scene-price.jpg",
     labelJp: "想定価格帯",
     labelEn: "Price",
     label: "想定価格帯（現段階）",
@@ -130,6 +133,7 @@ window.SUMI_PAGES = [
 
   {
     type: "survey",
+    image: "assets/img/scene-survey.jpg",
     labelJp: "アンケート",
     labelEn: "Survey",
     display: "車内で過ごす時間が、\n人生を豊かにする。",
