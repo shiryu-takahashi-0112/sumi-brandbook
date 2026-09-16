@@ -247,6 +247,7 @@
 
       var b = wrap();
       add(b, el("p", "body", page.body));
+      if (page.note && variant.inCarImage) add(b, el("p", "note", page.note));
       add(s.body, w, frame, b);
       return s.section;
     },

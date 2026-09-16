@@ -24,8 +24,7 @@ window.SUMI_VARIANTS = {
     key: "a",
     label: "デザイン案 A",
     productImage: "assets/img/product-a.png",
-    // 車内に取り付けた画像が用意できたらここにパスを入れる（null なら非表示）
-    inCarImage: null,
+    inCarImage: "assets/img/in-car-a.jpg",
     productHeadline: "斜めに切り落とした一角に、\n光を溜める。",
     productLead:
       "木目の面の一角を斜めに切り落とし、鏡面のシルバーをのぞかせる。静かな佇まいの中に、ひとつだけ視線の止まる場所をつくりました。",
@@ -40,7 +39,7 @@ window.SUMI_VARIANTS = {
     key: "b",
     label: "デザイン案 B",
     productImage: "assets/img/product-b.png",
-    inCarImage: null,
+    inCarImage: "assets/img/in-car-b.jpg",
     productHeadline: "全周を受けるベゼルと、\n内側に刻んだリブ。",
     productLead:
       "木目の面をシルバーのベゼルで全周から受け、その内側に細いリブを刻む。正面から見ても、斜めから見ても崩れない、端正な対称性を追いました。",
@@ -140,6 +139,7 @@ window.SUMI_PAGES = [
     display: "その空間に、違和感なく在る。",
     body:
       "主張するためではなく、空間に馴染むために。車内に置いたときに、もとからそこにあったように見えることを目指しています。",
+    note: "※ 装着イメージです。車種により見え方は異なります。",
     placeholder: "車内に取り付けたイメージは現在制作中です。"
   },
 
