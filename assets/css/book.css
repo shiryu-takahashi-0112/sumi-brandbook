@@ -129,6 +129,8 @@ body.book {
 .lead, .body {
   font-size: clamp(13px, 1.25vw, 16px);
   line-height: 2.15;
+  /* 最終行に1〜2文字だけ残るのを避ける（対応ブラウザのみ） */
+  text-wrap: pretty;
   letter-spacing: 0.06em;
   color: var(--ink-60);
   white-space: pre-line;
@@ -196,6 +198,44 @@ body.book {
   font-size: clamp(10px, 1vw, 12px); letter-spacing: 0.24em; opacity: 0.55;
 }
 .cover__meta span:last-child { font-size: clamp(9px, 0.95vw, 11px); letter-spacing: 0.08em; opacity: 0.45; }
+
+/* 表紙の読み方の1行 */
+.cover__guide {
+  font-size: clamp(10px, 1vw, 12px);
+  letter-spacing: 0.08em;
+  color: var(--ink-45);
+}
+
+/* 3語の並び（コンセプトのValue） */
+.trio {
+  display: flex; flex-wrap: wrap; gap: clamp(16px, 4vw, 48px);
+  width: 100%; max-width: var(--measure);
+  border-top: 1px solid var(--hair); border-bottom: 1px solid var(--hair);
+  padding: clamp(12px, 2vh, 18px) 0;
+}
+.trio__en {
+  font-family: var(--latin); font-weight: 300;
+  font-size: clamp(11px, 1.1vw, 13px); letter-spacing: 0.18em; opacity: 0.5;
+}
+.trio__jp {
+  font-family: var(--serif);
+  font-size: clamp(13px, 1.4vw, 16px); letter-spacing: 0.08em; margin-top: 0.4em;
+}
+
+/* 本文に添える補足ブロック（名前の由来・香りについて） */
+.aside {
+  width: 100%; max-width: var(--measure);
+  border-top: 1px solid var(--hair);
+  padding-top: clamp(10px, 1.8vh, 16px);
+}
+.aside__label {
+  font-size: clamp(10px, 1vw, 12px); letter-spacing: 0.14em;
+  color: var(--ink-45); margin-bottom: 0.7em;
+}
+.aside__text {
+  font-size: clamp(11px, 1.1vw, 13px); line-height: 2;
+  letter-spacing: 0.05em; color: var(--ink-60); margin: 0;
+}
 
 /* 仕様リスト（はじめに） */
 .specs { width: 100%; max-width: var(--measure); border-top: 1px solid var(--hair); }

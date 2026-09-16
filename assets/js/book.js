@@ -93,7 +93,7 @@
   /* ---------- レイアウトごとの組み立て ---------- */
   var renderers = {
 
-    cover: function (page) {
+    cover: function (page, i, total) {
       var section = el("section", "page cover");
 
       var photo = shot("cover__photo");
@@ -106,6 +106,7 @@
         logo("cover__mark"),
         el("hr", "tick"),
         el("div", "cover__tag", page.tagline),
+        page.guide ? el("div", "cover__guide", page.guide.replace("{{count}}", String(total))) : null,
         meta
       );
 
@@ -113,25 +114,6 @@
       return section;
     },
 
-    intro: function (page, i, total) {
-      var s = shell(page, i, total);
-      var w = wrap();
-      add(w, el("p", "display", page.display));
-
-      var b = wrap();
-      add(b, el("p", "body", page.body));
-
-      var specs = el("div", "specs");
-      page.specs.forEach(function (row) {
-        var r = el("div", "specs__row");
-        add(r, el("div", "specs__k", row[0]),
-              el("div", "specs__v", row[1].replace("{{count}}", String(total))));
-        add(specs, r);
-      });
-
-      add(s.body, w, b, specs);
-      return s.section;
-    },
 
     concept: function (page, i, total) {
       var s = shell(page, i, total);
@@ -150,7 +132,14 @@
       sc.style.display = "flex";
       sc.style.flexDirection = "column";
       sc.style.gap = "18px";
-      add(s.body, w, b, sc);
+      var trio = el("div", "trio");
+      (page.values || []).forEach(function (v) {
+        var item = el("div", "trio__item");
+        add(item, el("div", "trio__en", v[0]), el("div", "trio__jp", v[1]));
+        add(trio, item);
+      });
+
+      add(s.body, w, b, sc, trio);
       return s.section;
     },
 
@@ -160,6 +149,11 @@
       add(w, el("p", "display display--sm", page.display));
       var b = wrap();
       page.paragraphs.forEach(function (p) { add(b, el("p", "body", p)); });
+      var origin = el("div", "aside");
+      add(origin,
+        el("div", "aside__label", page.originLabel),
+        el("p", "aside__text", page.origin));
+
       var c = wrap();
       var closing = el("p", "mincho", page.closing);
       closing.style.whiteSpace = "pre-line";
@@ -169,42 +163,11 @@
       closing.style.fontSize = "clamp(13px, 1.4vw, 17px)";
       closing.style.margin = "0";
       add(c, closing);
-      add(s.body, w, b, c);
+      add(s.body, w, b, origin, c);
       return s.section;
     },
 
-    name: function (page, i, total) {
-      var s = shell(page, i, total);
-      var w = wrap();
-      add(w, logo("name__mark"), el("div", "name__reading", page.reading));
 
-      var terms = el("div", "terms");
-      page.terms.forEach(function (t) {
-        var row = el("div", "term");
-        add(row, el("div", "term__k", t[0]), el("div", "term__v", t[1]));
-        add(terms, row);
-      });
-
-      var b = wrap();
-      add(b, el("p", "note", page.body));
-      add(s.body, w, terms, b);
-      return s.section;
-    },
-
-    value: function (page, i, total) {
-      var s = shell(page, i, total);
-      var list = el("div", "values");
-      page.values.forEach(function (v) {
-        var row = el("div", "value");
-        var num = el("div", "value__num", v[0]);
-        var col = el("div");
-        add(col, el("div", "value__en", v[1]), el("div", "value__jp", v[2]), el("div", "value__desc", v[3]));
-        add(row, num, col);
-        add(list, row);
-      });
-      add(s.body, list);
-      return s.section;
-    },
 
     product: function (page, i, total) {
       var s = shell(page, i, total);
@@ -248,23 +211,16 @@
       var b = wrap();
       add(b, el("p", "body", page.body));
       if (page.note && variant.inCarImage) add(b, el("p", "note", page.note));
-      add(s.body, w, frame, b);
+
+      var scent = el("div", "aside");
+      add(scent,
+        el("div", "aside__label", page.scentLabel),
+        el("p", "aside__text", page.scent));
+
+      add(s.body, w, frame, b, scent);
       return s.section;
     },
 
-    scent: function (page, i, total) {
-      var s = shell(page, i, total);
-      var w = wrap();
-      add(w, el("p", "display", page.display));
-      var b = wrap();
-      add(b, el("p", "body", page.body));
-      var kw = el("div", "keywords");
-      page.keywords.forEach(function (k) { add(kw, el("span", null, k)); });
-      var n = wrap();
-      add(n, el("p", "note", page.note));
-      add(s.body, w, b, kw, n);
-      return s.section;
-    },
 
     price: function (page, i, total) {
       var s = shell(page, i, total);
