@@ -248,7 +248,7 @@
       q.style.display = "flex";
       q.style.flexDirection = "column";
       q.style.gap = "16px";
-      add(q, el("p", "display display--sm", page.question), el("p", "body", page.body));
+      add(q, el("p", "display display--sm", page.statement), el("p", "body", page.body));
 
       add(s.body, w, q, band(page));
       return s.section;
