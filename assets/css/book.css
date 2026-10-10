@@ -325,7 +325,7 @@ body.book {
   padding: clamp(18px, 3vh, 30px) clamp(18px, 3vw, 32px);
   border: 1px solid var(--hair-strong);
   background: rgba(237, 234, 229, 0.05);
-  color: inherit; text-decoration: none;
+  color: inherit; text-decoration: none; font: inherit; text-align: left; cursor: pointer;
   transition: background 160ms ease, border-color 160ms ease;
 }
 .cta:active { background: rgba(237, 234, 229, 0.11); border-color: var(--ink-45); }
@@ -381,3 +381,66 @@ body.book {
 .choice__k { font-family: var(--latin); font-weight: 300; font-size: clamp(12px, 1.2vw, 14px); letter-spacing: 0.24em; opacity: 0.5; }
 .choice__t { font-family: var(--serif); font-size: clamp(15px, 1.7vw, 20px); letter-spacing: 0.08em; }
 .choice__d { font-size: clamp(11px, 1.1vw, 13px); line-height: 2; letter-spacing: 0.05em; color: var(--ink-60); }
+
+/* ---------- アンケート（ブックの上に重ねて開く） ---------- */
+body.is-survey .nav-zone, body.is-survey .hint, body.is-survey .progress { display: none; }
+
+.survey {
+  position: fixed; inset: 0; z-index: 20;
+  background: var(--bg);
+  overflow-y: auto; -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+/* 入力欄は選択・長押しを許す（ブック本体は誤操作防止で止めている） */
+.survey input, .survey textarea {
+  -webkit-user-select: text; user-select: text; -webkit-touch-callout: default;
+}
+.survey__inner {
+  width: 100%; max-width: 720px; margin: 0 auto;
+  padding: calc(var(--pad-y) + env(safe-area-inset-top, 0px)) clamp(20px, 5vw, 48px) calc(var(--pad-y) + env(safe-area-inset-bottom, 0px));
+  display: flex; flex-direction: column; gap: clamp(28px, 4.4vh, 40px);
+}
+.survey__head { display: flex; align-items: center; justify-content: space-between; }
+.survey__mark { width: clamp(56px, 7vw, 80px); display: block; }
+.survey__close {
+  width: 44px; height: 44px; border: 1px solid var(--hair); background: none;
+  color: var(--ink-60); font-family: var(--latin); font-size: 22px; line-height: 1; cursor: pointer;
+}
+.survey__lead { margin: 0; color: var(--ink-60); }
+.survey__section { display: flex; flex-direction: column; gap: clamp(36px, 5.5vh, 52px); border-top: 1px solid var(--hair); padding-top: 22px; }
+
+.q { border: 0; margin: 0; padding: 0; min-width: 0; display: flex; flex-direction: column; gap: 20px; }
+.q[hidden], .q__other[hidden] { display: none; }
+.q__title { padding: 0; display: flex; gap: 14px; align-items: baseline; }
+.q__no { font-family: var(--latin); font-size: 12px; letter-spacing: 0.14em; color: var(--ink-45); flex: none; font-variant-numeric: tabular-nums; }
+.q__text { font-family: var(--serif); font-size: clamp(15px, 1.8vw, 18px); line-height: 1.8; letter-spacing: 0.04em; }
+.q.is-missing .q__text { text-decoration: underline; text-decoration-color: var(--ink-45); text-underline-offset: 6px; }
+
+.q__options { display: flex; flex-wrap: wrap; gap: 12px; }
+.opt { position: relative; display: inline-flex; cursor: pointer; }
+.opt input { position: absolute; opacity: 0; pointer-events: none; }
+.opt__text {
+  display: block; padding: 13px 20px; min-height: 48px;
+  border: 1px solid var(--hair); font-size: clamp(13px, 1.4vw, 15px); line-height: 1.6;
+  color: var(--ink-60); transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+.opt input:checked + .opt__text { border-color: var(--ink); color: var(--ink); background: rgba(237, 234, 229, 0.1); }
+.opt input:focus-visible + .opt__text { outline: 1px solid var(--ink); outline-offset: 2px; }
+
+.q__input {
+  width: 100%; padding: 13px 16px; min-height: 48px;
+  background: rgba(237, 234, 229, 0.04); border: 1px solid var(--hair); border-radius: 0;
+  color: var(--ink); font: inherit; font-size: 16px; line-height: 1.7;
+  -webkit-appearance: none; appearance: none;
+}
+.q__input::placeholder { color: var(--ink-45); }
+.q__input:focus { outline: none; border-color: var(--ink-45); }
+textarea.q__input { resize: vertical; }
+.q__field { display: flex; flex-direction: column; gap: 8px; }
+.q__label { font-size: 12px; letter-spacing: 0.08em; color: var(--ink-60); }
+.q__yen { display: flex; align-items: center; gap: 10px; max-width: 260px; }
+.q__unit { color: var(--ink-60); }
+
+.survey__msg { margin: 0; min-height: 1.6em; font-size: 13px; color: var(--ink-60); }
+.survey__submit:disabled { opacity: 0.5; cursor: default; }
+.survey__thanks { min-height: 100%; justify-content: center; }

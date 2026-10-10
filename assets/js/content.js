@@ -7,13 +7,152 @@ window.SUMI_CONFIG = {
   brand: "SUMI",
   bookTitle: "Brand Concept Book",
 
-  // TODO: アンケートフォームのURLが決まったらここだけ差し替える。
-  // 末尾に ?v=a / ?v=b（既にクエリがある場合は &v=a）が自動で付与され、
-  // どちらのパターンを見た回答かがフォーム側で判別できる。
-  surveyUrl: "https://example.com/sumi-survey",
+  // 回答の送り先。ブックの中でアンケートに答えると、ここへ送られて保存される（worker/index.js）。
+  // どちらのパターンを見た回答かは、送るときに自動で付く。
+  // Notionに貼る単体HTMLでは、書き出すときに公開先の絶対URLへ置き換える（tools/export_single.py）。
+  surveyEndpoint: "/api/answers"
+};
 
-  // フォームURLが仮のままかどうか。true の間は最終ページに「準備中」を出す。
-  surveyUrlIsPlaceholder: true
+/* --------------------------------------------------------------------------
+   アンケートの質問。ブック最後の「アンケートに回答する」で画面に出る。全10問。
+   type: single（1つ選ぶ）/ multi（いくつでも）/ text（短い記入）/ fields（記入欄だけ）
+   選択式の質問には必ず allowOther を付け、「その他」と自由記入の欄を出す（2026-10-10にShiryuから指示）
+   fields: 選択肢の下に添える記入欄。答えは欄ごとの id で保存される
+     （type は text / textarea / yen、yen は金額）
+   showIf: 前の質問の答えによって出し分ける（{ id: 質問ID, in: [選択肢…] }）
+   2026-10-06の定例MTGで決めた「絶対聞きたい」項目（使っているか・使わない理由・価格・形の種類・
+   車の使い方・乗っている車・その車にデザインが合うか）はすべて入れ、似た質問は1問にまとめている。
+   -------------------------------------------------------------------------- */
+window.SUMI_SURVEY = {
+  title: "アンケート",
+  lead: "ご覧いただいたSUMIについて、いくつか教えてください。\n分かる範囲で、思ったままにお答えください。",
+  submit: "回答を送る",
+  sending: "送信しています…",
+  error: "送信できませんでした。通信状況を確かめて、もう一度お試しください。",
+  required: "この質問にお答えください。",
+  thanksTitle: "ご協力ありがとうございました。",
+  thanksBody: "いただいた回答は、SUMIのものづくりに活かします。",
+  restart: "最初の画面に戻る",
+  other: "その他",
+  otherPlaceholder: "具体的に",
+
+  sections: [
+    {
+      title: "いまお使いのもの",
+      questions: [
+        {
+          id: "use",
+          type: "single",
+          required: true,
+          q: "車用のディフューザーや芳香剤を、いまお使いですか？",
+          options: ["使っている", "以前は使っていたが、いまは使っていない", "使ったことがない"],
+          allowOther: true
+        },
+        {
+          id: "useType",
+          type: "multi",
+          q: "お使いの（お使いだった）ものの形と香り、値段を教えてください。",
+          options: ["エアコンの吹き出し口に付けるタイプ", "置くタイプ", "ぶら下げるタイプ"],
+          allowOther: true,
+          fields: [
+            { id: "useScent", type: "text", label: "香り", placeholder: "例：せっけん、ウッド、柑橘、無香料 など" },
+            { id: "usePrice", type: "yen", label: "最後に買ったときの値段", placeholder: "例：1500" }
+          ],
+          showIf: { id: "use", in: ["使っている", "以前は使っていたが、いまは使っていない"] }
+        },
+        {
+          id: "notUseReason",
+          type: "multi",
+          q: "使っていない（やめた）理由を教えてください。",
+          options: [
+            "車に香りを残したくない（売却や下取りを考えている）",
+            "香りが強すぎる・好みに合うものがない",
+            "見た目が車の雰囲気に合わない",
+            "必要だと感じない"
+          ],
+          allowOther: true,
+          showIf: { id: "use", in: ["以前は使っていたが、いまは使っていない", "使ったことがない"] }
+        }
+      ]
+    },
+    {
+      title: "お車について",
+      questions: [
+        {
+          id: "car",
+          type: "text",
+          q: "いま乗っている車のメーカーと車種を教えてください。",
+          placeholder: "例：レクサス RX"
+        },
+        {
+          id: "carUse",
+          type: "multi",
+          q: "その車の使い方に近いものを選んでください。",
+          options: [
+            "自分で運転し、一人で乗ることが多い",
+            "自分で運転し、家族や子どもを乗せる",
+            "自分で運転し、友人や恋人を乗せる",
+            "仕事で使い、お客様や仕事の相手を乗せる",
+            "自分はあまり運転しない"
+          ],
+          allowOther: true
+        }
+      ]
+    },
+    {
+      title: "SUMIについて",
+      questions: [
+        {
+          id: "fit",
+          type: "single",
+          q: "ご覧いただいたデザインは、ご自身の車に合うと思いますか？付けたいと思いますか？",
+          options: ["車に合うし、付けたい", "車には合うが、付けたいほどではない", "車に合わないと思う"],
+          allowOther: true,
+          fields: [
+            { id: "fitReason", type: "textarea", label: "そう思った理由", placeholder: "自由にお書きください" }
+          ]
+        },
+        {
+          id: "wantType",
+          type: "single",
+          q: "付けるなら、どの形がよいですか？",
+          options: ["エアコンの吹き出し口に付けるタイプ", "置くタイプ", "ぶら下げるタイプ", "こだわらない"],
+          allowOther: true
+        }
+      ]
+    },
+    {
+      title: "価格と購入について",
+      questions: [
+        {
+          id: "price",
+          type: "fields",
+          q: "いくらなら買いますか？",
+          fields: [
+            { id: "priceBuy", type: "yen", label: "この値段なら買う", placeholder: "例：9000" },
+            { id: "priceTooHigh", type: "yen", label: "高くて買わない", placeholder: "例：15000" }
+          ]
+        },
+        {
+          id: "refill",
+          type: "single",
+          q: "香りの詰め替え（リフィル）は、1回分いくらなら定期的に買いますか？",
+          options: ["1,000円未満なら買う", "1,000〜2,000円なら買う", "2,000〜3,000円なら買う", "3,000円以上でも買う", "詰め替えは買わないと思う"],
+          allowOther: true
+        },
+        {
+          id: "buy",
+          type: "single",
+          q: "発売されたら、買うと思いますか？",
+          options: ["すぐに買いたい", "しばらく様子を見る", "買わないと思う"],
+          allowOther: true,
+          fields: [
+            { id: "contact", type: "text", label: "発売や先行予約のお知らせを受け取りたい方は、連絡先（任意）", placeholder: "メールアドレス または Instagramのアカウント" }
+          ]
+        }
+      ]
+    }
+  ]
 };
 
 /* --------------------------------------------------------------------------

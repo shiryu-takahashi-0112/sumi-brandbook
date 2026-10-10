@@ -60,12 +60,6 @@
     return span;
   }
 
-  /* ---------- アンケートURL（見たパターンをクエリで渡す） ---------- */
-  function surveyUrl() {
-    var u = CONFIG.surveyUrl;
-    return u + (u.indexOf("?") === -1 ? "?" : "&") + "v=" + variant.key;
-  }
-
   /* ---------- ページ枠（ヘッダー＋本文＋フッター） ---------- */
   function shell(page, index, total) {
     var section = el("section", "page");
@@ -261,16 +255,14 @@
       var b = wrap();
       add(b, el("p", "body", page.body));
 
-      var cta = el("a", "cta");
-      cta.href = surveyUrl();
-      cta.target = "_blank";
-      cta.rel = "noopener";
+      var cta = el("button", "cta");
+      cta.type = "button";
       var left = el("div");
       add(left,
         el("div", "cta__main", page.cta),
-        el("div", "cta__sub", CONFIG.surveyUrlIsPlaceholder ? "フォームURLは準備中です" : page.ctaSub));
+        el("div", "cta__sub", page.ctaSub));
       add(cta, left, el("div", "cta__arrow", "→"));
-      if (CONFIG.surveyUrlIsPlaceholder) cta.setAttribute("aria-disabled", "true");
+      cta.addEventListener("click", function () { openSurvey(); });
 
       var t = wrap();
       var thanks = el("p", "note", page.thanks);
@@ -319,6 +311,9 @@
   nextZone.addEventListener("click", function () { go(1); });
 
   document.addEventListener("keydown", function (e) {
+    if (surveyOpen) return;
+    var t = e.target && e.target.tagName;
+    if (t === "INPUT" || t === "TEXTAREA" || t === "BUTTON") return;
     if (e.key === "ArrowRight" || e.key === "PageDown" || e.key === " ") { e.preventDefault(); go(1); }
     if (e.key === "ArrowLeft" || e.key === "PageUp") { e.preventDefault(); go(-1); }
   });
@@ -351,4 +346,232 @@
   };
   pager.addEventListener("scroll", hideHint, { passive: true });
   setTimeout(hideHint, 6000);
+  /* ---------- アンケート ----------
+     質問は content.js の SUMI_SURVEY。ブックの上に重ねて開き、
+     答えは CONFIG.surveyEndpoint へ送って保存する。どちらの案を見たかも一緒に送る。 */
+  var surveyOpen = false;
+  var SURVEY = window.SUMI_SURVEY;
+
+  function openSurvey() {
+    if (!SURVEY) return;
+    surveyOpen = true;
+    var layer = buildSurvey();
+    body.appendChild(layer);
+    body.classList.add("is-survey");
+    layer.scrollTop = 0;
+  }
+
+  function buildSurvey() {
+    var layer = el("div", "survey");
+    layer.setAttribute("role", "dialog");
+    layer.setAttribute("aria-modal", "true");
+    layer.setAttribute("aria-label", SURVEY.title);
+
+    var inner = el("form", "survey__inner");
+    inner.noValidate = true;
+
+    var head = el("div", "survey__head");
+    var close = el("button", "survey__close", "×");
+    close.type = "button";
+    close.setAttribute("aria-label", "ブックに戻る");
+    close.addEventListener("click", function () { closeSurvey(layer); });
+    var lead = el("p", "body survey__lead", SURVEY.lead);
+    lead.style.whiteSpace = "pre-line";
+    add(head, logo("survey__mark"), close);
+    add(inner, head, el("p", "display display--sm", SURVEY.title), lead);
+
+    var no = 0;
+    var blocks = [];
+    SURVEY.sections.forEach(function (sec) {
+      var section = el("div", "survey__section");
+      add(section, el("div", "aside__label", sec.title));
+      sec.questions.forEach(function (q) {
+        var block = question(q);
+        blocks.push({ q: q, block: block });
+        add(section, block);
+      });
+      add(inner, section);
+    });
+
+    // 前の答えで出し分ける質問の番号を振り直す
+    function refresh() {
+      no = 0;
+      blocks.forEach(function (b) {
+        var show = !b.q.showIf || matches(b.q.showIf);
+        b.block.hidden = !show;
+        if (show) b.block.querySelector(".q__no").textContent = "Q" + pad(++no);
+        // 「その他」の記入欄は、その他を選んだときだけ出す
+        var other = b.block.querySelector(".q__other");
+        if (other) other.hidden = !b.block.querySelector('input[value="' + SURVEY.other + '"]').checked;
+      });
+    }
+    function matches(cond) {
+      var v = valueOf(inner, cond.id);
+      return v != null && cond.in.indexOf(v) !== -1;
+    }
+    inner.addEventListener("change", refresh);
+    refresh();
+
+    var msg = el("p", "survey__msg");
+    msg.setAttribute("role", "status");
+    var submit = el("button", "cta survey__submit");
+    submit.type = "submit";
+    add(submit, el("div", "cta__main", SURVEY.submit), el("div", "cta__arrow", "→"));
+    add(inner, msg, submit);
+
+    inner.addEventListener("submit", function (e) {
+      e.preventDefault();
+      var answers = {};
+      var firstMissing = null;
+      blocks.forEach(function (b) {
+        b.block.classList.remove("is-missing");
+        if (b.block.hidden) return;
+        collect(inner, b.q, answers);
+        if (b.q.required && answers[b.q.id] == null) {
+          b.block.classList.add("is-missing");
+          if (!firstMissing) firstMissing = b.block;
+        }
+      });
+      if (firstMissing) {
+        msg.textContent = SURVEY.required;
+        firstMissing.scrollIntoView({ behavior: "smooth", block: "center" });
+        return;
+      }
+      submit.disabled = true;
+      msg.textContent = SURVEY.sending;
+      fetch(CONFIG.surveyEndpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ variant: variant.key, answers: answers })
+      }).then(function (r) {
+        if (!r.ok) throw new Error("status " + r.status);
+        showThanks(layer);
+      }).catch(function () {
+        submit.disabled = false;
+        msg.textContent = SURVEY.error;
+      });
+    });
+
+    add(layer, inner);
+    return layer;
+  }
+
+  function question(q) {
+    var block = el("fieldset", "q");
+    var legend = el("legend", "q__title");
+    add(legend, el("span", "q__no"), el("span", "q__text", q.q));
+    add(block, legend);
+    var name = "sv_" + q.id;
+
+    if (q.type === "single" || q.type === "multi") {
+      var list = el("div", "q__options");
+      var opts = q.options.slice();
+      if (q.allowOther) opts.push(SURVEY.other);
+      opts.forEach(function (o, i) {
+        var lab = el("label", "opt");
+        var input = el("input");
+        input.type = q.type === "single" ? "radio" : "checkbox";
+        input.name = name;
+        input.value = o;
+        input.id = name + "_" + i;
+        add(lab, input, el("span", "opt__text", o));
+        add(list, lab);
+      });
+      add(block, list);
+      if (q.allowOther) {
+        var other = el("input", "q__input q__other");
+        other.type = "text";
+        other.name = name + "_other";
+        other.placeholder = SURVEY.otherPlaceholder;
+        add(block, other);
+      }
+    } else if (q.type !== "fields") {
+      add(block, field({ id: q.id, type: q.type, placeholder: q.placeholder }));
+    }
+    // 選択肢の下に添える記入欄（香り・理由・金額など）
+    (q.fields || []).forEach(function (f) { add(block, field(f)); });
+    return block;
+  }
+
+  function field(f) {
+    var box = el("label", "q__field");
+    if (f.label) add(box, el("span", "q__label", f.label));
+    var input;
+    if (f.type === "textarea") {
+      input = el("textarea", "q__input");
+      input.rows = 3;
+    } else {
+      input = el("input", "q__input");
+      input.type = f.type === "yen" ? "number" : "text";
+      if (f.type === "yen") { input.inputMode = "numeric"; input.min = "0"; input.step = "100"; }
+    }
+    input.name = "sv_" + f.id;
+    input.placeholder = f.placeholder || "";
+    if (f.type === "yen") {
+      var row = el("span", "q__yen");
+      add(row, input, el("span", "q__unit", "円"));
+      add(box, row);
+    } else {
+      add(box, input);
+    }
+    return box;
+  }
+
+  // 質問1つ分の答えを、保存する id ごとに集める（選択肢の答え＋添えた記入欄）
+  function collect(form, q, into) {
+    var ids = (q.type === "fields" ? [] : [q.id]).concat((q.fields || []).map(function (f) { return f.id; }));
+    ids.forEach(function (id) {
+      var v = valueOf(form, id);
+      if (v != null && v !== "" && !(Array.isArray(v) && !v.length)) into[id] = v;
+    });
+  }
+
+  // 1つの質問の答えを取り出す。複数選択は配列、「その他」は記入内容を添える
+  function valueOf(form, id) {
+    var name = "sv_" + id;
+    var inputs = form.querySelectorAll('[name="' + name + '"]');
+    if (!inputs.length) return null;
+    var first = inputs[0];
+    var otherBox = form.querySelector('[name="' + name + '_other"]');
+    function withOther(v) {
+      if (v === SURVEY.other && otherBox && otherBox.value.trim()) return SURVEY.other + "：" + otherBox.value.trim();
+      return v;
+    }
+    if (first.type === "radio") {
+      for (var i = 0; i < inputs.length; i++) if (inputs[i].checked) return withOther(inputs[i].value);
+      return null;
+    }
+    if (first.type === "checkbox") {
+      var out = [];
+      for (var j = 0; j < inputs.length; j++) if (inputs[j].checked) out.push(withOther(inputs[j].value));
+      return out;
+    }
+    var v = first.value.trim();
+    if (first.type === "number") return v === "" ? null : Number(v);
+    return v;
+  }
+
+  function showThanks(layer) {
+    var inner = el("div", "survey__inner survey__thanks");
+    var again = el("button", "cta");
+    again.type = "button";
+    add(again, el("div", "cta__main", SURVEY.restart), el("div", "cta__arrow", "→"));
+    // 次の方に渡せるよう、ブックの表紙に戻して入力を残さない
+    again.addEventListener("click", function () {
+      closeSurvey(layer);
+      target = 0;
+      pager.scrollTo({ left: 0, behavior: "auto" });
+    });
+    add(inner, logo("survey__mark"), el("p", "display display--sm", SURVEY.thanksTitle),
+      el("p", "body", SURVEY.thanksBody), again);
+    layer.innerHTML = "";
+    add(layer, inner);
+    layer.scrollTop = 0;
+  }
+
+  function closeSurvey(layer) {
+    surveyOpen = false;
+    body.classList.remove("is-survey");
+    if (layer.parentNode) layer.parentNode.removeChild(layer);
+  }
 })();

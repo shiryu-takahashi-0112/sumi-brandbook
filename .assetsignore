@@ -3,3 +3,9 @@ tools
 README.md
 .gitignore
 CLAUDE.md
+worker
+wrangler.jsonc
+.wrangler
+.git
+node_modules
+.dev.vars

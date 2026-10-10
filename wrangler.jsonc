@@ -5,7 +5,18 @@
   "observability": {
     "enabled": true
   },
+  // ブック本体は静的ファイル。回答の受け取り（/api）と一覧（/results）だけ worker/index.js が先に処理する
+  "main": "worker/index.js",
   "assets": {
-    "directory": "."
-  }
+    "directory": ".",
+    "binding": "ASSETS",
+    "run_worker_first": ["/api/*", "/results", "/results/*"]
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "sumi-survey",
+      "database_id": "a4ac9adb-8018-441d-b14f-0676a22b91f8"
+    }
+  ]
 }
