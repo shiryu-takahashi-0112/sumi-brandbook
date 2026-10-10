@@ -60,6 +60,17 @@
     return span;
   }
 
+  /* ---------- 入口（A案・B案を選ぶ画面）へ戻る導線 ----------
+     調査する人が次の人のために案を選び直すためのもの。
+     単体HTML（data-base が空）には入口が無いので出さない。 */
+  function entranceLink(cls) {
+    if (!base) return null;
+    var a = el("a", cls);
+    a.href = base;
+    add(a, el("span", "entrance__arrow", "←"), el("span", null, CONFIG.backToEntrance));
+    return a;
+  }
+
   /* ---------- ページ枠（ヘッダー＋本文＋フッター） ---------- */
   function shell(page, index, total) {
     var section = el("section", "page");
@@ -115,7 +126,7 @@
         meta
       );
 
-      add(section, photo, el("div", "cover__scrim"), inner);
+      add(section, photo, el("div", "cover__scrim"), inner, entranceLink("entrance entrance--cover"));
       return section;
     },
 
@@ -563,7 +574,7 @@
       pager.scrollTo({ left: 0, behavior: "auto" });
     });
     add(inner, logo("survey__mark"), el("p", "display display--sm", SURVEY.thanksTitle),
-      el("p", "body", SURVEY.thanksBody), again);
+      el("p", "body", SURVEY.thanksBody), again, entranceLink("entrance entrance--thanks"));
     layer.innerHTML = "";
     add(layer, inner);
     layer.scrollTop = 0;

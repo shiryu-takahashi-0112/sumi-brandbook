@@ -10,7 +10,11 @@ window.SUMI_CONFIG = {
   // 回答の送り先。ブックの中でアンケートに答えると、ここへ送られて保存される（worker/index.js）。
   // どちらのパターンを見た回答かは、送るときに自動で付く。
   // Notionに貼る単体HTMLでは、書き出すときに公開先の絶対URLへ置き換える（tools/export_single.py）。
-  surveyEndpoint: "/api/answers"
+  surveyEndpoint: "/api/answers",
+
+  // 入口（A案・B案を選ぶ画面）へ戻る導線の文言。表紙の左上と、アンケート送信後の画面に出る。
+  // Notionに貼る単体HTMLには入口が無いので出さない。
+  backToEntrance: "案の選択に戻る"
 };
 
 /* --------------------------------------------------------------------------
@@ -32,7 +36,7 @@ window.SUMI_SURVEY = {
   required: "この質問にお答えください。",
   thanksTitle: "ご協力ありがとうございました。",
   thanksBody: "いただいた回答は、SUMIのものづくりに活かします。",
-  restart: "最初の画面に戻る",
+  restart: "この案の表紙に戻る",
   other: "その他",
   otherPlaceholder: "具体的に",
 
