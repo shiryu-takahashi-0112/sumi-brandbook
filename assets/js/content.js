@@ -80,18 +80,22 @@ window.SUMI_SURVEY = {
       ]
     },
     {
-      title: "お車について",
+      title: "あなたとお車について",
       questions: [
         {
-          id: "car",
-          type: "text",
-          q: "いま乗っている車のメーカーと車種を教えてください。",
-          placeholder: "例：レクサス RX"
+          id: "age",
+          type: "single",
+          q: "年齢と職業を教えてください。",
+          options: ["20代", "30代", "40代", "50代", "60代以上"],
+          allowOther: true,
+          fields: [
+            { id: "job", type: "text", label: "職業", placeholder: "例：会社員（営業）、経営者、自営業 など" }
+          ]
         },
         {
           id: "carUse",
           type: "multi",
-          q: "その車の使い方に近いものを選んでください。",
+          q: "いま乗っている車と、その使い方を教えてください。",
           options: [
             "自分で運転し、一人で乗ることが多い",
             "自分で運転し、家族や子どもを乗せる",
@@ -99,7 +103,10 @@ window.SUMI_SURVEY = {
             "仕事で使い、お客様や仕事の相手を乗せる",
             "自分はあまり運転しない"
           ],
-          allowOther: true
+          allowOther: true,
+          fields: [
+            { id: "car", type: "text", label: "メーカーと車種", placeholder: "例：レクサス RX" }
+          ]
         }
       ]
     },
